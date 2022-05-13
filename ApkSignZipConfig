@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#================================ Common config =================================
+
+# Optional, console will ask if path not found
+build_tools_folder="$root_dir/bin/28.0.3"
+
+# Optional, console will ask if path not found
+#unsigned_apk="$root_dir/input_history/2.4.0-prod.apk"
+
+
+#================================ Keystore config =================================
+
+# Config: UAT
+#key_path="$root_dir/keystore/ApkSignZipSampleKey"
+#key_alias="ApkSignZipSampleKey"
+#key_password="12345678"
+
+# Config: PROD
+key_path="$root_dir/keystore/ApkSignZipSampleKey"
+key_alias="ApkSignZipSampleKey"
+key_password="12345678"
+
+# Add new config here
+
+

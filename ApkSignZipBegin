@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#Readme
+# This script helps signing and zipping the unsigned apk
+
+current_process_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+source "$current_process_dir"/process/ApkSignZipProcess
+
+
+
+
+

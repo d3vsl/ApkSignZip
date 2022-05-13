@@ -1,0 +1,142 @@
+#!/bin/bash
+
+current_process_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+root_dir="$(dirname "$current_process_dir")"
+
+output_dir="$root_dir/output"
+
+# for getting uat / prod config
+source "$root_dir"/ApkSignZipConfig
+
+# for helper functions
+source "$root_dir"/helper/ApkSignZipHelper
+
+#program begins
+echo -e "\n-----1. APK-PATH-----" #-e for \n
+if [[ -z "$unsigned_apk" ]]; 
+then
+	echo Enter your unsigned APK:
+	read unsigned_apk
+else
+	echo $unsigned_apk
+fi
+echo "---------------------"
+
+
+echo -e "\n-----2. KEY-STORE-PATH-----"
+if [[ -z "$key_path" ]]; 
+then
+	echo Enter your key path:
+	read key_path
+else
+	echo $key_path
+fi
+echo "---------------------"
+
+
+echo -e "\n-----3. KEY-ALIAS-----"
+if [[ -z "$key_alias" ]]; 
+then
+	echo Enter your key alias:
+	read key_alias
+else
+	echo $key_alias
+fi
+echo "---------------------"
+
+
+echo -e "\n-----4. VERIFYING-----"
+echo Verifying:
+result=$(verifyApk $build_tools_folder $unsigned_apk) 
+
+if [[ $result == *"DOES NOT VERIFY"* ]];
+then 
+	echo "APK Status: Unsigned"
+else
+	if [[ $result == *"Verified using v1 scheme (JAR signing): true"* ]];
+	then			
+		echo "APK Status: Verified using v1 scheme"
+	fi
+	if [[ $result == *"Verified using v2 scheme (APK Signature Scheme v2): true"* ]];
+	then
+		echo "APK Status: Verified using v2 scheme"
+		exit 1
+	fi
+fi
+echo "---------------------"
+
+
+
+folder_name=$output_dir
+
+file_name=$(basename "${unsigned_apk}")
+
+extension="${file_name##*.}"
+
+file_name_without_ext="${file_name%.*}"
+
+zipped_file_name=$folder_name"/"$file_name_without_ext"-zipped."$extension
+ 
+out_file_name=$folder_name"/"$file_name_without_ext"-zipped-signed."$extension
+
+
+
+echo -e "\n-----5. build_tools_folder-----"
+
+needZipAlignAPK="UNKNOWN"
+while [[ "$needZipAlignAPK" != "Y" && "$needZipAlignAPK" != "N" ]]; do
+	echo "Need ZipAlign APK? (Y/N)"
+	read needZipAlignAPK
+done
+
+if [[ "$needZipAlignAPK" == "Y" ]]; then
+	echo "continue zipAlign"
+else
+	echo "You are good to go! Bye"
+	open $folder_name
+	exit 1
+fi
+
+
+if [[ -z "$build_tools_folder" ]]; 
+then
+	echo Enter your zip align folder:
+	read build_tools_folder
+else
+	echo $build_tools_folder
+fi
+echo "---------------------"
+
+
+echo -e "\n------6. ZIP-ALIGN--------"
+removeFileIfExist $zipped_file_name
+zipApk $build_tools_folder $unsigned_apk $zipped_file_name
+if [ -f "$zipped_file_name" ]; then
+	echo "Zipped successfully"
+else
+	echo "Zipped Failure"
+	exit 1
+fi
+echo "---------------------"
+
+
+echo -e "\n------7. SIGNING--------"
+removeFileIfExist $out_file_name
+yes "$key_password" | signApk $build_tools_folder $key_path $out_file_name $zipped_file_name
+#check file exists
+if [ -f "$out_file_name" ]; then 
+	echo "Signed successfully"
+else
+	echo "Signed Failure"
+	exit 1
+fi
+echo "---------------------"
+
+open $folder_name
+
+
+
+
+
+

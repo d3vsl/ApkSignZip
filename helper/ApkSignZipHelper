@@ -1,0 +1,33 @@
+#!/bin/bash
+
+function verifyApk(){ 
+	local param_build_tools_folder="$1"
+	local param_apk_path="$2"
+	cd $param_build_tools_folder
+	./apksigner verify -v $param_apk_path
+}
+
+function zipApk(){
+	local param_build_tools_folder="$1"
+	local param_unzipped_apk_path="$2"
+	local param_zipped_apk_path="$3"
+  cd $param_build_tools_folder
+	./zipalign -v 4 $param_unzipped_apk_path $param_zipped_apk_path
+}
+
+function signApk(){
+	local param_build_tools_folder="$1"
+	local param_key_path="$2"
+	local param_new_apk_path="$3"
+	local param_apk_path="$4"
+	cd $param_build_tools_folder
+	./apksigner sign --ks "$param_key_path" "$param_apk_path"
+	mv $param_apk_path $param_new_apk_path
+}
+
+function removeFileIfExist(){
+	local param_file_name="$1"
+	if [ -f "$param_file_name" ]; then
+		rm $param_file_name
+	fi
+}
